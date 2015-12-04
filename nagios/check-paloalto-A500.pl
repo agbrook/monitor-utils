@@ -33,7 +33,7 @@ my $stat;
 my $msg;
 my $perf;
 my $script_name = "check-paloalto-A500.pl";
-my $script_version = 1.1;
+my $script_version = 1.2;
 
 
 ### SNMP OIDs
@@ -51,6 +51,19 @@ my $s_pa_total_active_sessions = '.1.3.6.1.4.1.25461.2.1.2.3.3.0';
 my $s_pa_total_tcp_active_sessions = '.1.3.6.1.4.1.25461.2.1.2.3.4.0';
 my $s_pa_total_udp_active_sessions = '.1.3.6.1.4.1.25461.2.1.2.3.5.0';
 my $s_pa_total_icmp_active_sessions = '.1.3.6.1.4.1.25461.2.1.2.3.6.0';
+
+### Storage OIDs
+my $s_storageTable = '.1.3.6.1.2.1.25.2.3';
+my $s_storageTable_memory_size = '1.3.6.1.2.1.25.2.3.1.5.20';
+my $s_storageTable_memory_used = '1.3.6.1.2.1.25.2.3.1.6.20';
+my $s_storageTable_swap_size = '1.3.6.1.2.1.25.2.3.1.5.30';
+my $s_storageTable_swap_used = '1.3.6.1.2.1.25.2.3.1.6.30';
+my $s_storageTable_config_partition_size = '1.3.6.1.2.1.25.2.3.1.5.40';
+my $s_storageTable_config_partition_used = '1.3.6.1.2.1.25.2.3.1.6.40';
+my $s_storageTable_log_partition_size = '1.3.6.1.2.1.25.2.3.1.5.41';
+my $s_storageTable_log_partition_used = '1.3.6.1.2.1.25.2.3.1.6.41';
+my $s_storageTable_root_partition_size = '1.3.6.1.2.1.25.2.3.1.5.42';
+my $s_storageTable_root_partition_used = '1.3.6.1.2.1.25.2.3.1.6.42';
 
 ### Functions
 ###############
@@ -169,7 +182,7 @@ elsif($check_type eq "sessions") {
 
     }
 
-    $perf = "active=$pa_total_active_sessions:$warn:$crit;max=$pa_max_sessions";
+    $perf = "active=$pa_total_active_sessions:$warn:$crit";
 
 }
 
