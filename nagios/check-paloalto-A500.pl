@@ -29,12 +29,12 @@
 use strict;
 use lib "/usr/lib/nagios/plugins/";
 use Net::SNMP;
+use Getopt::Std;
 my $stat;
 my $msg;
 my $perf;
 my $script_name = "check-paloalto-A500.pl";
 my $script_version = 1.2;
-
 
 ### SNMP OIDs
 ###############
@@ -80,7 +80,6 @@ sub _create_session {
 
 sub FSyntaxError {
     print "Syntax Error !\n";
-# print "$0 -H [ip|dnsname] -C [snmp community] -t [temp|fan|ps|cpu|mem|module|freeint|firmware|ha|model|sessions|udp_sessions|tcp_sessions|icmp_sessions] -w [warning value] -c [critical value] -d [days]\n";
     print "$script_name\n";
     print "Version : $script_version\n";
     print "-H = Ip/Dns Name of the FW\n";
@@ -91,35 +90,17 @@ sub FSyntaxError {
     exit(3);
 }
 
-if($#ARGV != 9) {
-    FSyntaxError;
-}
 
 ### Gather input from user
 #############################
-my $switch;
-my $community;
-my $check_type;
-my $warn = 0;
-my $crit = 0;
+my %options = ();
+getopts("H:C:t:w:c:", \%options);
+my $switch = $options{'H'};
+my $community = $options{'C'};
+my $check_type = $options{'t'};
+my $warn = $options{'w'} || 0;
+my $crit = $options{'c'} || 0;
 my $int;
-
-while(@ARGV) {
-    my $temp = shift(@ARGV);
-    if("$temp" eq '-H') {
-	$switch = shift(@ARGV);
-    } elsif("$temp" eq '-C') {
-	$community = shift(@ARGV);
-    } elsif("$temp" eq '-t') {
-	$check_type = shift(@ARGV);
-    } elsif("$temp" eq '-w') {
-	$warn = shift(@ARGV);
-    } elsif("$temp" eq '-c') {
-	$crit = shift(@ARGV);
-    } else {
-	FSyntaxError();
-    }
-}
 
 # Validate Warning
 if($warn > $crit) {
@@ -161,7 +142,7 @@ elsif($check_type eq "ha") {
 
 
 ### SESSIONS ###
-elsif($check_type eq "sessions") {
+elsif($check_type eq "sessions" and $warn and $crit) {
     my $R_firm = $snmp_session->get_request(-varbindlist => [$s_pa_max_sessions]);
     my $pa_max_sessions = "$R_firm->{$s_pa_max_sessions}";
 
@@ -187,7 +168,7 @@ elsif($check_type eq "sessions") {
 }
 
 ### TCP SESSIONS ###
-elsif($check_type eq "tcp_sessions") {
+elsif($check_type eq "tcp_sessions" and $warn and $crit) {
     my $R_firm = $snmp_session->get_request(-varbindlist => [$s_pa_total_tcp_active_sessions]);
     my $pa_total_tcp_active_sessions = "$R_firm->{$s_pa_total_tcp_active_sessions}";
 
@@ -209,7 +190,7 @@ elsif($check_type eq "tcp_sessions") {
 }
 
 ### UDP SESSIONS ###
-elsif($check_type eq "udp_sessions") {
+elsif($check_type eq "udp_sessions" and $warn and $crit) {
     my $R_firm = $snmp_session->get_request(-varbindlist => [$s_pa_total_udp_active_sessions]);
     my $pa_total_udp_active_sessions = "$R_firm->{$s_pa_total_udp_active_sessions}";
 
@@ -231,7 +212,7 @@ elsif($check_type eq "udp_sessions") {
 }
 
 ### ICMP SESSIONS ###
-elsif($check_type eq "icmp_sessions") {
+elsif($check_type eq "icmp_sessions" and $warn and $crit) {
     my $R_firm = $snmp_session->get_request(-varbindlist => [$s_pa_total_icmp_active_sessions]);
     my $pa_total_icmp_active_sessions = "$R_firm->{$s_pa_total_icmp_active_sessions}";
 
@@ -264,7 +245,7 @@ elsif($check_type eq "firmware") {
 }
 
 ### CPU ###
-elsif($check_type eq "cpu") {
+elsif($check_type eq "cpu" and $warn and $crit) {
     my $R_mgmt = $snmp_session->get_request(-varbindlist => [$s_cpu_mgmt]);
     my $mgmt = "$R_mgmt->{$s_cpu_mgmt}";
     my $R_data = $snmp_session->get_request(-varbindlist => [$s_cpu_data]);
