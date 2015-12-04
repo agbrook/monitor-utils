@@ -169,7 +169,7 @@ elsif($check_type eq "sessions") {
 
     }
 
-	$perf="";
+    $perf = "active=$pa_total_active_sessions:$warn:$crit;max=$pa_max_sessions";
 
 }
 
@@ -191,7 +191,7 @@ elsif($check_type eq "tcp_sessions") {
 
     }
 
-	$perf="";
+    $perf = "active=$pa_total_tcp_active_sessions:$warn:$crit";
 
 }
 
@@ -213,7 +213,7 @@ elsif($check_type eq "udp_sessions") {
 
     }
 
-	$perf="";
+    $perf = "active=$pa_total_udp_active_sessions:$warn:$crit";
 
 }
 
@@ -235,7 +235,7 @@ elsif($check_type eq "icmp_sessions") {
 
     }
 
-	$perf="";
+    $perf = "active=$pa_total_icmp_active_sessions:$warn:$crit";
 
 }
 
@@ -267,7 +267,7 @@ elsif($check_type eq "cpu") {
 	$msg = "OK: Mgmt - $mgmt, Data - $data";
 	$stat = 0;
     }
-    $perf = "mgmt=$mgmt;data=$data;$warn;$crit";
+    $perf = "mgmt=$mgmt:$warn:$crit;data=$data;$warn;$crit";
 
 ### Bad Syntax ###
 
