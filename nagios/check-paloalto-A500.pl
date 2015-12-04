@@ -58,12 +58,12 @@ my $s_storageTable_memory_size = '1.3.6.1.2.1.25.2.3.1.5.20';
 my $s_storageTable_memory_used = '1.3.6.1.2.1.25.2.3.1.6.20';
 my $s_storageTable_swap_size = '1.3.6.1.2.1.25.2.3.1.5.30';
 my $s_storageTable_swap_used = '1.3.6.1.2.1.25.2.3.1.6.30';
-my $s_storageTable_config_partition_size = '1.3.6.1.2.1.25.2.3.1.5.40';
-my $s_storageTable_config_partition_used = '1.3.6.1.2.1.25.2.3.1.6.40';
-my $s_storageTable_log_partition_size = '1.3.6.1.2.1.25.2.3.1.5.41';
-my $s_storageTable_log_partition_used = '1.3.6.1.2.1.25.2.3.1.6.41';
-my $s_storageTable_root_partition_size = '1.3.6.1.2.1.25.2.3.1.5.42';
-my $s_storageTable_root_partition_used = '1.3.6.1.2.1.25.2.3.1.6.42';
+my $s_storageTable_config_part_size = '1.3.6.1.2.1.25.2.3.1.5.40';
+my $s_storageTable_config_part_used = '1.3.6.1.2.1.25.2.3.1.6.40';
+my $s_storageTable_log_part_size = '1.3.6.1.2.1.25.2.3.1.5.41';
+my $s_storageTable_log_part_used = '1.3.6.1.2.1.25.2.3.1.6.41';
+my $s_storageTable_root_part_size = '1.3.6.1.2.1.25.2.3.1.5.42';
+my $s_storageTable_root_part_used = '1.3.6.1.2.1.25.2.3.1.6.42';
 
 ### Functions
 ###############
@@ -84,9 +84,9 @@ sub FSyntaxError {
     print "Version : $script_version\n";
     print "-H = Ip/Dns Name of the FW\n";
     print "-C = SNMP Community\n";
-    print "-t = Check type (currently only cpu/firmware/model/ha/sessions/icmp_sesions/tcp_sessions/udp_sessions)\n";
-    print "-w = Warning Value\n";
-    print "-c = Critical Value\n";
+    print "-t = Check type (currently only cpu/firmware/model/ha/sessions/icmp_sesions/tcp_sessions/udp_sessions/memory/swap/config_part/log_part/root_part)\n";
+    print "-w = Warning Value (not needed for firmware, model or ha type)\n";
+    print "-c = Critical Value (not needed for firmware, model or ha type)\n";
     exit(3);
 }
 
@@ -262,10 +262,104 @@ elsif($check_type eq "cpu" and $warn and $crit) {
 	$stat = 0;
     }
     $perf = "mgmt=$mgmt:$warn:$crit;data=$data;$warn;$crit";
+} 
+### Memory Check ###
+elsif($check_type eq "memory" and $warn and $crit) {
+    my $memory_used = ($snmp_session->get_request(-varbindlist => [$s_storageTable_memory_used]))->{$s_storageTable_memory_used};
+    my $memory_size = ($snmp_session->get_request(-varbindlist => [$s_storageTable_memory_size]))->{$s_storageTable_memory_size};
+    my $memory_perc = sprintf "%.2f", ($memory_used/$memory_size)*100;
 
+    if($memory_perc > $crit) {
+        $msg = "CRIT: ";
+        $stat = 2;
+    } elsif ($memory_perc > $warn) {
+        $msg = "WARN: ";
+        $stat = 1;
+    } else {
+        $msg = "OK: ";
+        $stat = 1;
+    }
+    $msg = $msg ."Memory Used Percent - $memory_perc";
+    $perf = "memory=$memory_perc:$warn:$crit";
+}
+### Swap Check ###
+elsif($check_type eq "swap" and $warn and $crit) {
+    my $swap_used = ($snmp_session->get_request(-varbindlist => [$s_storageTable_swap_used]))->{$s_storageTable_swap_used};
+    my $swap_size = ($snmp_session->get_request(-varbindlist => [$s_storageTable_swap_size]))->{$s_storageTable_swap_size};
+    my $swap_perc = sprintf "%.2f", ($swap_used/$swap_size)*100;
+
+    if($swap_perc > $crit) {
+        $msg = "CRIT: ";
+        $stat = 2;
+    } elsif ($swap_perc > $warn) {
+        $msg = "WARN: ";
+        $stat = 1;
+    } else {
+        $msg = "OK: ";
+        $stat = 1;
+    }
+    $msg = $msg ."Swap Used Percent - $swap_perc";
+    $perf = "swap=$swap_perc:$warn:$crit";
+}
+### Config Partition Check ###
+elsif($check_type eq "config_part" and $warn and $crit) {
+    my $config_part_used = ($snmp_session->get_request(-varbindlist => [$s_storageTable_config_part_used]))->{$s_storageTable_config_part_used};
+    my $config_part_size = ($snmp_session->get_request(-varbindlist => [$s_storageTable_config_part_size]))->{$s_storageTable_config_part_size};
+    my $config_part_perc = sprintf "%.2f", ($config_part_used/$config_part_size)*100;
+
+    if($config_part_perc > $crit) {
+        $msg = "CRIT: ";
+        $stat = 2;
+    } elsif ($config_part_perc > $warn) {
+        $msg = "WARN: ";
+        $stat = 1;
+    } else {
+        $msg = "OK: ";
+        $stat = 1;
+    }
+    $msg = $msg ."Config Partition Used Percent - $config_part_perc";
+    $perf = "config_part=$config_part_perc:$warn:$crit";
+}
+### Log Partition Check ###
+elsif($check_type eq "log_part" and $warn and $crit) {
+    my $log_part_used = ($snmp_session->get_request(-varbindlist => [$s_storageTable_log_part_used]))->{$s_storageTable_log_part_used};
+    my $log_part_size = ($snmp_session->get_request(-varbindlist => [$s_storageTable_log_part_size]))->{$s_storageTable_log_part_size};
+    my $log_part_perc = sprintf "%.2f", ($log_part_used/$log_part_size)*100;
+
+    if($log_part_perc > $crit) {
+        $msg = "CRIT: ";
+        $stat = 2;
+    } elsif ($log_part_perc > $warn) {
+        $msg = "WARN: ";
+        $stat = 1;
+    } else {
+        $msg = "OK: ";
+        $stat = 1;
+    }
+    $msg = $msg ."Log Partition Used Percent - $log_part_perc";
+    $perf = "log_part=$log_part_perc:$warn:$crit";
+}
+### Root Partition Check ###
+elsif($check_type eq "root_part" and $warn and $crit) {
+    my $root_part_used = ($snmp_session->get_request(-varbindlist => [$s_storageTable_root_part_used]))->{$s_storageTable_root_part_used};
+    my $root_part_size = ($snmp_session->get_request(-varbindlist => [$s_storageTable_root_part_size]))->{$s_storageTable_root_part_size};
+    my $root_part_perc = sprintf "%.2f", ($root_part_used/$root_part_size)*100;
+
+    if($root_part_perc > $crit) {
+        $msg = "CRIT: ";
+        $stat = 2;
+    } elsif ($root_part_perc > $warn) {
+        $msg = "WARN: ";
+        $stat = 1;
+    } else {
+        $msg = "OK: ";
+        $stat = 1;
+    }
+    $msg = $msg ."Root Partition Used Percent - $root_part_perc";
+    $perf = "root_part=$root_part_perc:$warn:$crit";
+}
 ### Bad Syntax ###
-
-} else {
+else {
     FSyntaxError();
 }
 
