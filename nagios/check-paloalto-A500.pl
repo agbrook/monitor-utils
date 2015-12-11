@@ -72,8 +72,8 @@ sub _create_session {
     my $snmp_version = 2;
     my ($sess, $err) = Net::SNMP->session( -hostname => $server, -version => $snmp_version, -community => $comm);
     if (!defined($sess)) {
-	print "Can't create SNMP session to $server\n";
-	exit(1);
+        print "Can't create SNMP session to $server\n";
+        exit(1);
     }
     return $sess;
 }
@@ -164,17 +164,17 @@ elsif($check_type eq "sessions" and $warn and $crit) {
     my $R_firm = $snmp_session->get_request(-varbindlist => [$s_pa_total_active_sessions]);
     my $pa_total_active_sessions = "$R_firm->{$s_pa_total_active_sessions}";
 
-	$perf=" - Max Active Sessions :  $pa_max_sessions";
+        $perf=" - Max Active Sessions :  $pa_max_sessions";
     
     if($pa_total_active_sessions > $crit ) {
-	$msg =  "CRIT: Total Active Sessions :  $pa_total_active_sessions".$perf;
-	$stat = 2;
+        $msg =  "CRIT: Total Active Sessions :  $pa_total_active_sessions".$perf;
+        $stat = 2;
     } elsif($pa_total_active_sessions > $warn ) {
-	$msg =  "WARN: Total Active Sessions :  $pa_total_active_sessions".$perf;
-	$stat = 1;
+        $msg =  "WARN: Total Active Sessions :  $pa_total_active_sessions".$perf;
+        $stat = 1;
     } else {
-	$msg =  "OK:   Total Active Sessions :  $pa_total_active_sessions".$perf;
-	$stat = 0;
+        $msg =  "OK:   Total Active Sessions :  $pa_total_active_sessions".$perf;
+        $stat = 0;
 
     }
 
@@ -189,14 +189,14 @@ elsif($check_type eq "tcp_sessions" and $warn and $crit) {
 
     
     if($pa_total_tcp_active_sessions > $crit ) {
-	$msg =  "CRIT: TCP Active Sessions :  $pa_total_tcp_active_sessions";
-	$stat = 2;
+        $msg =  "CRIT: TCP Active Sessions :  $pa_total_tcp_active_sessions";
+        $stat = 2;
     } elsif($pa_total_tcp_active_sessions > $warn ) {
-	$msg =  "WARN: TCP Active Sessions :  $pa_total_tcp_active_sessions";
-	$stat = 1;
+        $msg =  "WARN: TCP Active Sessions :  $pa_total_tcp_active_sessions";
+        $stat = 1;
     } else {
-	$msg =  "OK:   TCP Active Sessions :  $pa_total_tcp_active_sessions";
-	$stat = 0;
+        $msg =  "OK:   TCP Active Sessions :  $pa_total_tcp_active_sessions";
+        $stat = 0;
 
     }
 
@@ -211,14 +211,14 @@ elsif($check_type eq "udp_sessions" and $warn and $crit) {
 
     
     if($pa_total_udp_active_sessions > $crit ) {
-	$msg =  "CRIT: UDP Active Sessions :  $pa_total_udp_active_sessions";
-	$stat = 2;
+        $msg =  "CRIT: UDP Active Sessions :  $pa_total_udp_active_sessions";
+        $stat = 2;
     } elsif($pa_total_udp_active_sessions > $warn ) {
-	$msg =  "WARN: UDP Active Sessions :  $pa_total_udp_active_sessions";
-	$stat = 1;
+        $msg =  "WARN: UDP Active Sessions :  $pa_total_udp_active_sessions";
+        $stat = 1;
     } else {
-	$msg =  "OK:   UDP Active Sessions :  $pa_total_udp_active_sessions";
-	$stat = 0;
+        $msg =  "OK:   UDP Active Sessions :  $pa_total_udp_active_sessions";
+        $stat = 0;
 
     }
 
@@ -233,14 +233,14 @@ elsif($check_type eq "icmp_sessions" and $warn and $crit) {
 
     
     if($pa_total_icmp_active_sessions > $crit ) {
-	$msg =  "CRIT: ICMP Active Sessions :  $pa_total_icmp_active_sessions";
-	$stat = 2;
+        $msg =  "CRIT: ICMP Active Sessions :  $pa_total_icmp_active_sessions";
+        $stat = 2;
     } elsif($pa_total_icmp_active_sessions > $warn ) {
-	$msg =  "WARN: ICMP Active Sessions :  $pa_total_icmp_active_sessions";
-	$stat = 1;
+        $msg =  "WARN: ICMP Active Sessions :  $pa_total_icmp_active_sessions";
+        $stat = 1;
     } else {
-	$msg =  "OK:   ICMP Active Sessions :  $pa_total_icmp_active_sessions";
-	$stat = 0;
+        $msg =  "OK:   ICMP Active Sessions :  $pa_total_icmp_active_sessions";
+        $stat = 0;
 
     }
 
@@ -267,14 +267,14 @@ elsif($check_type eq "cpu" and $warn and $crit) {
     my $data = "$R_data->{$s_cpu_data}";
 
     if($mgmt > $crit or $data > $crit) {
-	$msg = "CRIT: Mgmt - $mgmt, Data - $data";
-	$stat = 2;
+        $msg = "CRIT: Mgmt - $mgmt, Data - $data";
+        $stat = 2;
     } elsif($mgmt > $warn or $data > $warn) {
-	$msg = "WARN: Mgmt - $mgmt, Data - $data";
-	$stat = 1;
+        $msg = "WARN: Mgmt - $mgmt, Data - $data";
+        $stat = 1;
     } else {
-	$msg = "OK: Mgmt - $mgmt, Data - $data";
-	$stat = 0;
+        $msg = "OK: Mgmt - $mgmt, Data - $data";
+        $stat = 0;
     }
     $perf = "mgmt=$mgmt:$warn:$crit;data=$data;$warn;$crit";
 } 
@@ -375,37 +375,37 @@ elsif($check_type eq "root_part" and $warn and $crit) {
 }
 elsif($check_type eq "interface") {
     my $s_ifTable_map = {
-	'ifDescr' => '1.3.6.1.2.1.2.2.1.2',
-	'ifAdminStatus' => '1.3.6.1.2.1.2.2.1.7',
-	'ifOperStatus' => '1.3.6.1.2.1.2.2.1.8',
+        'ifDescr' => '1.3.6.1.2.1.2.2.1.2',
+        'ifAdminStatus' => '1.3.6.1.2.1.2.2.1.7',
+        'ifOperStatus' => '1.3.6.1.2.1.2.2.1.8',
     };
 
     # Table to store the results of all the queries
     my $ifTable = ();
     my $result = $snmp_session->get_entries(
-	-columns => [ values %{$s_ifTable_map}  ],
+        -columns => [ values %{$s_ifTable_map}  ],
     );
 
     my @columnNames = keys %{$s_ifTable_map};
     for my $oid (oid_lex_sort(keys %{$result})) {
         my ($index) = $oid =~ /\.(\d+)$/;
         for my $column (@columnNames) {
-	    if (oid_base_match($s_ifTable_map->{$column}, $oid)) {
-		$ifTable->{$index}->{$column} = $result->{$oid};
-	    }
-	}
+            if (oid_base_match($s_ifTable_map->{$column}, $oid)) {
+               $ifTable->{$index}->{$column} = $result->{$oid};
+            }
+        }
     }
     my $allnormal = 1;
     my @errorInt;
     for my $index (keys %{$ifTable}) {
         if ($ifTable->{$index}->{'ifOperStatus'} != $ifTable->{$index}->{'ifAdminStatus'}) {
-	    $allnormal = 0;
-	    push @errorInt, $ifTable->{$index}->{'ifDescr'};
-	}
+            $allnormal = 0;
+            push @errorInt, $ifTable->{$index}->{'ifDescr'};
+        }
     }
 
     if ($allnormal != 1) {
-	$msg = "CRIT: ".join(" and ",@errorInt)." interface down but administratively up.";
+        $msg = "CRIT: ".join(" and ",@errorInt)." interface down but administratively up.";
     }
     else {
         $msg = "OK: All Administrativly up interfaces are up.";
