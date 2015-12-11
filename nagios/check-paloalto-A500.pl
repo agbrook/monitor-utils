@@ -28,8 +28,8 @@
 
 use strict;
 use lib "/usr/lib/nagios/plugins/";
-use Net::SNMP;
-use Getopt::Std;
+use Net::SNMP qw(:snmp);
+use Getopt::Long qw(:config no_ignore_case);
 my $stat;
 my $msg;
 my $perf;
@@ -84,23 +84,31 @@ sub FSyntaxError {
     print "Version : $script_version\n";
     print "-H = Ip/Dns Name of the FW\n";
     print "-C = SNMP Community\n";
-    print "-t = Check type (currently only cpu/firmware/model/ha/sessions/icmp_sesions/tcp_sessions/udp_sessions/memory/swap/config_part/log_part/root_part)\n";
+    print "-t = Check type (currently only cpu/firmware/model/ha/sessions/icmp_sesions/tcp_sessions/udp_sessions/memory/swap/config_part/log_part/root_part/interface)\n";
     print "-w = Warning Value (not needed for firmware, model or ha type)\n";
     print "-c = Critical Value (not needed for firmware, model or ha type)\n";
+    print "-i = Interfaces that should be up, comma separated (needed for interface type)\n";
     exit(3);
 }
 
 
 ### Gather input from user
 #############################
-my %options = ();
-getopts("H:C:t:w:c:", \%options);
-my $switch = $options{'H'};
-my $community = $options{'C'};
-my $check_type = $options{'t'};
-my $warn = $options{'w'} || 0;
-my $crit = $options{'c'} || 0;
-my $int;
+my $switch;# = $options{'H'};
+my $community;# = $options{'C'};
+my $check_type;# = $options{'t'};
+my $warn = 0; #$options{'w'} || 0;
+my $crit = 0; #$options{'c'} || 0;
+my @interfaces;# = $options{'i'};
+GetOptions(
+    "switch|H=s" => \$switch,
+    "community|C=s" => \$community,
+    "check_type|t=s" => \$check_type,
+    "warn|w=i" => \$warn,
+    "critical|c=i" => \$crit,
+    "interfaces|i=s" => \@interfaces,
+
+);
 
 # Validate IP or hostname is passed in
 if (!$switch) {
@@ -367,6 +375,47 @@ elsif($check_type eq "root_part" and $warn and $crit) {
     }
     $msg = $msg ."Root Partition Used Percent - $root_part_perc";
     $perf = "root_part=$root_part_perc:$warn:$crit";
+}
+elsif($check_type eq "interface" and defined @interfaces) {
+    my $s_ifTable_map = {
+	'ifDescr' => '1.3.6.1.2.1.2.2.1.2',
+	'ifOperStatus' => '1.3.6.1.2.1.2.2.1.8',
+    };
+
+    # Table to store the results of all the queries
+    my $ifTable = ();
+    my $result = $snmp_session->get_entries(
+	-columns => [ values %{$s_ifTable_map}  ],
+    );
+
+    my @columnNames = keys %{$s_ifTable_map};
+    for my $oid (oid_lex_sort(keys %{$result})) {
+        my ($index) = $oid =~ /\.(\d+)$/;
+        for my $column (@columnNames) {
+	    if (oid_base_match($s_ifTable_map->{$column}, $oid)) {
+		$ifTable->{$index}->{$column} = $result->{$oid};
+	    }
+	}
+    }
+    my $allIntUp = 1;
+    my @errorInt;
+    for my $index (keys %{$ifTable}) {
+	for my $interface (@interfaces) {
+	    if($ifTable->{$index}->{'ifDescr'} eq $interface) {
+                if ($ifTable->{$index}->{'ifOperStatus'} != 1) {
+		    $allIntUp = 0;
+		    push @errorInt, $ifTable->{$index}->{'ifDescr'};
+		}
+	    }
+	}
+    }
+
+    if ($allIntUp != 1) {
+	$msg = "CRIT: ".join(" and ",@errorInt)." interface down.";
+    }
+    else {
+        $msg = "OK: ".join(" and ",@interfaces)." interface up.";
+    }
 }
 ### Bad Syntax ###
 else {
