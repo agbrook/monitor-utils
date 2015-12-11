@@ -102,6 +102,16 @@ my $warn = $options{'w'} || 0;
 my $crit = $options{'c'} || 0;
 my $int;
 
+# Validate IP or hostname is passed in
+if (!$switch) {
+    print "IP or Hostname of the FW missing\n";
+    FSyntaxError();
+}
+# Validdate that a community string is passed in
+if(!$community) {
+    print "Community string missing\n";
+    FSyntaxError();
+}
 # Validate Warning
 if($warn > $crit) {
     print "Warning can't be larger then Critical: $warn > $crit\n";
