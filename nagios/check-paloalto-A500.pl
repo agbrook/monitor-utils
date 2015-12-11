@@ -87,7 +87,6 @@ sub FSyntaxError {
     print "-t = Check type (currently only cpu/firmware/model/ha/sessions/icmp_sesions/tcp_sessions/udp_sessions/memory/swap/config_part/log_part/root_part/interface)\n";
     print "-w = Warning Value (not needed for firmware, model or ha type)\n";
     print "-c = Critical Value (not needed for firmware, model or ha type)\n";
-    print "-i = Interfaces that should be up, comma separated (needed for interface type)\n";
     exit(3);
 }
 
@@ -99,14 +98,12 @@ my $community;# = $options{'C'};
 my $check_type;# = $options{'t'};
 my $warn = 0; #$options{'w'} || 0;
 my $crit = 0; #$options{'c'} || 0;
-my @interfaces;# = $options{'i'};
 GetOptions(
     "switch|H=s" => \$switch,
     "community|C=s" => \$community,
     "check_type|t=s" => \$check_type,
     "warn|w=i" => \$warn,
     "critical|c=i" => \$crit,
-    "interfaces|i=s" => \@interfaces,
 
 );
 
@@ -376,9 +373,10 @@ elsif($check_type eq "root_part" and $warn and $crit) {
     $msg = $msg ."Root Partition Used Percent - $root_part_perc";
     $perf = "root_part=$root_part_perc:$warn:$crit";
 }
-elsif($check_type eq "interface" and defined @interfaces) {
+elsif($check_type eq "interface") {
     my $s_ifTable_map = {
 	'ifDescr' => '1.3.6.1.2.1.2.2.1.2',
+	'ifAdminStatus' => '1.3.6.1.2.1.2.2.1.7',
 	'ifOperStatus' => '1.3.6.1.2.1.2.2.1.8',
     };
 
@@ -397,24 +395,20 @@ elsif($check_type eq "interface" and defined @interfaces) {
 	    }
 	}
     }
-    my $allIntUp = 1;
+    my $allnormal = 1;
     my @errorInt;
     for my $index (keys %{$ifTable}) {
-	for my $interface (@interfaces) {
-	    if($ifTable->{$index}->{'ifDescr'} eq $interface) {
-                if ($ifTable->{$index}->{'ifOperStatus'} != 1) {
-		    $allIntUp = 0;
-		    push @errorInt, $ifTable->{$index}->{'ifDescr'};
-		}
-	    }
+        if ($ifTable->{$index}->{'ifOperStatus'} != $ifTable->{$index}->{'ifAdminStatus'}) {
+	    $allnormal = 0;
+	    push @errorInt, $ifTable->{$index}->{'ifDescr'};
 	}
     }
 
-    if ($allIntUp != 1) {
-	$msg = "CRIT: ".join(" and ",@errorInt)." interface down.";
+    if ($allnormal != 1) {
+	$msg = "CRIT: ".join(" and ",@errorInt)." interface down but administratively up.";
     }
     else {
-        $msg = "OK: ".join(" and ",@interfaces)." interface up.";
+        $msg = "OK: All Administrativly up interfaces are up.";
     }
 }
 ### Bad Syntax ###
